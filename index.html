@@ -111,15 +111,15 @@
     }).addTo(map);
 
     Promise.all([
-      fetch("data/ecoles.geojson").then((res) => res.json()),
-      fetch("data/gares.geojson").then((res) => res.json()),
-      fetch("data/points_durs.geojson").then((res) => res.json()),
-      fetch("data/liaisons_sdic.geojson").then((res) => res.json()),
-      fetch("data/zones30.geojson").then((res) => res.json()),
-      fetch("data/accidents.geojson").then((res) => res.json()),
-      fetch("data/fub.geojson").then((res) => res.json()),
-      fetch("data/plan_velo_2021_2026.geojson").then((res) => res.json()),
-      fetch("data/prio1.geojson").then((res) => res.json()),
+      fetch("/geovisu/data/ecoles.geojson").then(res => res.json()),
+      fetch("/geovisu/data/gares.geojson").then(res => res.json()),
+      fetch("/geovisu/data/points_durs.geojson").then(res => res.json()),
+      fetch("/geovisu/data/liaisons_sdic.geojson").then(res => res.json()),
+      fetch("/geovisu/data/zones30.geojson").then(res => res.json()),
+      fetch("/geovisu/data/accidents.geojson").then(res => res.json()),
+      fetch("/geovisu/data/fub.geojson").then(res => res.json()),
+      fetch("/geovisu/data/plan_velo_2021_2026.geojson").then(res => res.json()),
+      fetch("/geovisu/data/prio1.geojson").then(res => res.json()),
     ]).then(
       ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData]) => {
         const ecoleIcon = L.icon({
