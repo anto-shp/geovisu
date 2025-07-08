@@ -3,7 +3,6 @@
 "name": "points_durs",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "fid": 567, "id": null, "Infos": null, "infos_1": null, "mots clés": null, "mots cles2": null, "mots cles3": null, "rues": null, "commentair": null }, "geometry": { "type": "Point", "coordinates": [ 7.745305698125325, 48.578180741895189 ] } },
 { "type": "Feature", "properties": { "fid": 1, "id": 1, "Infos": null, "infos_1": null, "mots clés": "traversée", "mots cles2": "marquage", "mots cles3": "feux", "rues": "Rue de l'Ill", "commentair": null }, "geometry": { "type": "Point", "coordinates": [ 7.7705937, 48.6132638 ] } },
 { "type": "Feature", "properties": { "fid": 2, "id": 2, "Infos": null, "infos_1": null, "mots clés": "discontinuités", "mots cles2": null, "mots cles3": null, "rues": "Pont Papeterie", "commentair": null }, "geometry": { "type": "Point", "coordinates": [ 7.781059, 48.6111996 ] } },
 { "type": "Feature", "properties": { "fid": 3, "id": 3, "Infos": null, "infos_1": null, "mots clés": "traversée", "mots cles2": null, "mots cles3": null, "rues": "Rue de la Thur", "commentair": null }, "geometry": { "type": "Point", "coordinates": [ 7.7752438, 48.616153400000016 ] } },
