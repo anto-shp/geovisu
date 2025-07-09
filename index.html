@@ -2,10 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Liaisons cyclables</title>
+  <title>Carte avec impression</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="css/leaflet.css" />
+  <link rel="stylesheet" href="css/Control.Geocoder.css" />
+  
+
+
   <style>
     html,
     body {
@@ -56,8 +61,8 @@
   <div id="map"></div>
   <img id="logos" src="data/logos.png" alt="Logos" />
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="js/leaflet.js"></script>
+  <script src="js/Control.Geocoder.js"></script>
   <script>
       // Le point en bas à gauche de la carte
     var sudOuest = L.latLng(48.40,7.40);
@@ -79,6 +84,7 @@
       {
         attribution: "&copy; OpenStreetMap & OSM-Fr contributors",
         maxZoom: 20,
+        crossOrigin: true,
       }
     );
     const positron = L.tileLayer(
@@ -88,6 +94,7 @@
           '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors & CartoDB',
         subdomains: "abcd",
         maxZoom: 20,
+        crossOrigin: true,
       }
     );
     const googleSat = L.tileLayer(
@@ -95,6 +102,7 @@
       {
         attribution: "&copy; Google & sources",
         maxZoom: 20,
+        crossOrigin: true,
       }
     );
 
@@ -117,11 +125,12 @@
       fetch("data/liaisons_sdic.geojson").then((res) => res.json()),
       fetch("data/zones30.geojson").then((res) => res.json()),
       fetch("data/accidents.geojson").then((res) => res.json()),
-      fetch("data/fub.geojson").then((res) => res.json()),
+      fetch("data/FUB.geojson").then((res) => res.json()),
       fetch("data/plan_velo_2021_2026.geojson").then((res) => res.json()),
       fetch("data/prio1.geojson").then((res) => res.json()),
+      fetch("data/liaisons_ateliers.geojson").then((res) => res.json()),
     ]).then(
-      ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData]) => {
+      ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData, ateliersData]) => {
         const ecoleIcon = L.icon({
           iconUrl: "data/ecole.png",
           iconSize: [22, 22],
@@ -288,7 +297,7 @@
         }).addTo(map);
 
 
-          // Priorités ateliers ; priorités 1
+          // Priorités 1
           const prioFiltrée = {
             ...prioData,
             features: prioData.features.filter((feature) => {
@@ -311,6 +320,30 @@
               `);
             },
           }).addTo(map);
+
+          // Ateliers associations
+          const ateliersFiltrée = {
+            ...ateliersData,
+            features: ateliersData.features.filter((feature) => {
+              const valeur = feature.properties["PRIORITE"];
+              return valeur === "Prio1"; 
+            }),
+          };
+
+        const ateliersLayer = L.geoJSON(ateliersFiltrée, {
+            style: () => ({
+              color: "#5188ff",      
+              weight: 8,
+              opacity: 0.5, 
+            }),
+            onEachFeature: (feature, layer) => {
+              const id = feature.properties["PRIORITE1"] || "Non précisé";
+              layer.bindPopup(`
+                <strong>Liaisons associations</strong><br>
+              `);
+            },
+          }).addTo(map);
+          
 
         const zones30Layer = L.geoJSON(zones30Data, {
           style: {
@@ -340,6 +373,7 @@
           "Points durs FUB": fubLayer,
           "Plan vélo": planveloLayer,
           "Priorités ateliers": prioLayer,
+          "Liaisons ateliers": ateliersLayer,
         };
 
         L.control.layers(baseMaps, overlays, {
@@ -383,6 +417,8 @@ legend.onAdd = function (map) {
     "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px dashed #808080; width: 25px; display:inline-block; margin-right:5px'></i> Inscrit dans un projet urbain<br>";
   div.innerHTML +=
     "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px solid #73b851; width: 25px; display:inline-block; margin-right:5px'></i> Existant<br>";
+  div.innerHTML +=
+    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px solid #5188ff; width: 25px; display:inline-block; margin-right:5px'></i> Existant<br>";
 
   return div;
 };
