@@ -58,7 +58,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <script src="js/bundle.js"></script>
   <script>
       // Le point en bas à gauche de la carte
     var sudOuest = L.latLng(48.40,7.40);
@@ -109,15 +108,6 @@
       errorMessage: "Adresse non trouvée",
       geocoder: L.Control.Geocoder.nominatim(),
       position: "topright", 
-    }).addTo(map);
-
-    // Export de la vue cartographique
-    L.easyPrint({
-      title: 'Exporter la carte',
-      position: 'topright',
-      exportOnly: true,
-      filename: 'ma_carte',
-      sizeModes: ['Current']
     }).addTo(map);
 
     Promise.all([
