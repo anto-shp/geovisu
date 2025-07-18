@@ -46,6 +46,10 @@
       border-radius: 6px;
       box-shadow: 0 0 5px #999;
       font-size: 14px;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform-origin: bottom right;
+      opacity: 1;
+      transform: scale(1) translate(0, 0);
     }
     #logos {
       position: absolute;
@@ -53,7 +57,25 @@
       left: 13px; /* juste à droite du zoom */
       height: 60px; /* adapte la taille si nécessaire */
       z-index: 1000;
+      }
+
+    /* Masquage avec animation d’aspiration */
+    .legend-hidden {
+      opacity: 0;
+      transform: scale(0.1) translate(50px, 50px);
+      pointer-events: none;
     }
+
+    /* Style du bouton toggle */
+    .leaflet-control.legend-toggle {
+      background: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    }
+    
   </style>
 </head>
 <body>
@@ -106,6 +128,15 @@
       }
     );
 
+    const ESRIDark = L.tileLayer(
+      "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution: "&copy; ESRI",
+        maxZoom: 20,
+        crossOrigin: true,
+      }
+    );
+
     positron.addTo(map);
     map.zoomControl.setPosition("topright");
   
@@ -128,11 +159,21 @@
       fetch("data/fub.geojson").then((res) => res.json()),
       fetch("data/plan_velo_2021_2026.geojson").then((res) => res.json()),
       fetch("data/prio1.geojson").then((res) => res.json()),
+      fetch("data/prio2.geojson").then((res) => res.json()),
+      fetch("data/non_priorise.geojson").then((res) => res.json()),
       fetch("data/liaisons_ateliers.geojson").then((res) => res.json()),
+      fetch("data/existant.geojson").then((res) => res.json()),
     ]).then(
-      ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData, ateliersData]) => {
+      ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData, prio2Data, nonprioData, ateliersData, existantData]) => {
         const ecoleIcon = L.icon({
-          iconUrl: "data/ecole.png",
+          iconUrl: "data/Ecole.svg",
+          iconSize: [22, 22],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32],
+        });
+
+        const lyceeIcon = L.icon({
+          iconUrl: "data/Lycee.svg",
           iconSize: [22, 22],
           iconAnchor: [16, 32],
           popupAnchor: [0, -32],
@@ -146,17 +187,30 @@
         });
 
         const ecolesLayer = L.geoJSON(ecolesData, {
-          pointToLayer: (feature, latlng) =>
-            L.marker(latlng, { icon: ecoleIcon }),
-            onEachFeature: (feature, layer) => {
-            const type= feature.properties["type"] || "Non précisé";
+          pointToLayer: (feature, latlng) => {
+            const type = feature.properties["type"]?.toLowerCase() || "";
+
+            let icon;
+            if (type.includes("elementaire")) {
+              icon = ecoleIcon;
+            } else if (type.includes("collège") || type.includes("college") || type.includes("lycee") || type.includes("lycée")) {
+              icon = lyceeIcon;
+            } else {
+              icon = ecoleIcon;
+            }
+
+            return L.marker(latlng, { icon: icon });
+          },
+
+          onEachFeature: (feature, layer) => {
+            const type = feature.properties["type"] || "Non précisé";
 
             layer.bindPopup(`
               <strong>Ecole</strong><br>
-              <b>type :</b> ${type}<br>
+              <b>Type :</b> ${type}<br>
             `);
-          },
-        })
+          }
+        });
 
         const garesLayer = L.geoJSON(garesData, {
           pointToLayer: (feature, latlng) =>
@@ -185,8 +239,8 @@
           pointToLayer: (feature, latlng) =>
             L.circle(latlng, {
               radius: 20,
-              fillColor: "#7209b7",
-              color: "#7209b7",
+              fillColor: "#0496ff",
+              color: "#0496ff",
               weight: 1,
               opacity: 0.6,
               fillOpacity: 0.4,
@@ -203,8 +257,8 @@
               fillColor: "#4361ee",
               color: "#4361ee",
               weight: 1,
-              opacity: 0.6,
-              fillOpacity: 0.4,
+              opacity: 1,
+              fillOpacity: 1,
             }),
           onEachFeature: (feature, layer) => {
             const motsCles = feature.properties["mots clés"] || "Non précisé";
@@ -218,117 +272,240 @@
 
         // LIAISONS SDIC
         const pistesLayer = L.geoJSON(pistesData, {
-          style: () => ({
-            color: "#00b35a",
-            weight: 3,
-            opacity: 0.8,
-          }),
-        onEachFeature: (feature, layer) => {
+          style: (feature) => {
+            const statut = feature.properties["ETAT"];
+            let color = "#00b35a"; // couleur par défaut
+
+            if (statut === "NOUVELLE LIAISON") {
+              color = "#7209b7"; // violet foncé
+            } else if (statut === "EXISTANT A AMELIORER") {
+              color = "#f77f00"; // orange
+            }
+
+            return {
+              color: color,
+              weight: 3,
+              opacity: 0.8,
+            };
+          },
+
+          onEachFeature: (feature, layer) => {
             const id = feature.properties["id_3"] || "Non précisé";
             const communes = feature.properties["Commune_liaison"] || "Non précisé";
+            const statut = feature.properties["ETAT"] || "Non précisé";
 
             layer.bindPopup(`
-              <strong>Point dur</strong><br>
+              <strong>Liaison SDIC</strong><br>
               <b>Identifiant :</b> ${id}<br>
               <b>Commune liaison :</b> ${communes}<br>
+              <b>Statut :</b> ${statut}<br>
             `);
-          },
+          }
         }).addTo(map);
 
-        // Plan Vélo 2021 2026
-        const planveloLayer = L.geoJSON(planveloData, {
-          style: (feature) => {
-            const priorite = feature.properties["priorite"];
 
-            // Définition des styles par catégorie
-            if (priorite === "1" || priorite === "1,à améliorer") {
-              return {
-                color: "#00733f",
-                weight: 3,
-                opacity: 1,
-                dashArray: "5,5",
-              };
-            } else if (priorite === "amenagement realise") {
-              return {
-                color: "#73b851",
-                weight: 3,
-                opacity: 1,
-              };
-            } else if (priorite === "1 CP") {
-              return {
-                color: "#66cc99",
-                weight: 3,
-                opacity: 1,
-                dashArray: "5,5",
-              };
-            } else if (priorite === "Post 2026") {
-              return {
-                color: "#800000",
-                weight: 3,
-                opacity: 1,
-                dashArray: "5,5",
-              };
-            } else if (priorite === "Projet connu") {
-              return {
-                color: "#808080",
-                weight: 3,
-                opacity: 1,
-                dashArray: "5,5",
-              };
-            } else if (["2", "3", "4"].includes(priorite)) {
-              return {
-                color: "#cc0000",
-                weight: 3,
-                opacity: 1,
-                dashArray: "5,5",
-              };
-            } else {
-              return {
-                color: "#999999",
-                weight: 2,
-                opacity: 0.5,
-                dashArray: "5,5",
-              };
+        map.on("zoomend", () => {
+          const zoom = map.getZoom();
+
+          pistesLayer.setStyle((feature) => {
+            const statut = feature.properties["ETAT"];
+            let color = "#00b35a";
+
+            if (statut === "NOUVELLE LIAISON") {
+              color = "#7209b7";
+            } else if (statut === "EXISTANT A AMELIORER") {
+              color = "#f77f00";
             }
-          },
+
+            return {
+              color: color,
+              weight: zoom >= 13 ? 4 : 2, // épaisseur dynamique
+              opacity: 0.8,
+            };
+          });
+        });
+
+        // LIAISONS EXISTANTES
+        const existantLayer = L.geoJSON(existantData, {
+          style: (feature) => ({
+            color: "#73b851",
+            weight: map.getZoom() < 13 ? 1 : map.getZoom() < 15 ? 2 : 3,
+            opacity: 0.8,
+          }),
           onEachFeature: (feature, layer) => {
-            layer.bindPopup(`<strong>${feature.properties.types || "Plan vélo 2021 2026"}</strong>`);
-          },
+            layer.bindPopup(`<strong>Existant</strong>`);
+          }
         }).addTo(map);
 
+        // Adapter l'épaisseur au zoom
+        map.on("zoomend", () => {
+          const zoom = map.getZoom();
+          let weight = 3;
+          if (zoom < 13) weight = 1;
+          else if (zoom < 15) weight = 2;
 
-          // Priorités 1
-          const prioFiltrée = {
-            ...prioData,
-            features: prioData.features.filter((feature) => {
-              const valeur = feature.properties["prio1 élu"];
-              return valeur === "1" || valeur === "x"; 
-            }),
-          };
+          existantLayer.setStyle({
+            color: "#73b851",
+            weight: weight,
+            opacity: 0.8,
+          });
+        });
 
-          const prioLayer = L.geoJSON(prioFiltrée, {
-            style: () => ({
-              color: "#780002",      
-              weight: 3,
-              opacity: 1, 
-            }),
+
+
+        let planveloLayer; // accessible partout
+
+        function createPlanVeloLayer() {
+          planveloLayer = L.geoJSON(planveloData, {
+            style: getLineStyle,
             onEachFeature: (feature, layer) => {
-              const id = feature.properties["ID_2"] || "Non précisé";
-              layer.bindPopup(`
-                <strong>Priorités ateliers</strong><br>
-                <b>Identifiant :</b> ${id}<br>
-              `);
+              layer.bindPopup(`<strong>${feature.properties.types || "Plan vélo 2021 2026"}</strong>`);
             },
           }).addTo(map);
+        }
 
-          // Ateliers associations
-          const ateliersFiltrée = {
-            ...ateliersData,
-            features: ateliersData.features.filter((feature) => {
-              const valeur = feature.properties["PRIORITE"];
-              return valeur === "Prio1"; 
-            }),
+        function getLineStyle(feature) {
+          const priorite = feature.properties["priorite"];
+          const zoom = map.getZoom();
+
+          // Détermine un poids selon le zoom
+          let weight = 3;
+          if (zoom < 13) weight = 1;
+          else if (zoom < 15) weight = 2;
+
+          // Même logique de style que ton code initial
+          if (priorite === "1" || priorite === "1,à améliorer") {
+            return { color: "#00733f", weight, opacity: 1, dashArray: "5,5" };
+          } else if (priorite === "amenagement realise") {
+            return { color: "#73b851", weight, opacity: 1 };
+          } else if (priorite === "1 CP") {
+            return { color: "#66cc99", weight, opacity: 1, dashArray: "5,5" };
+          } else if (priorite === "Post 2026") {
+            return { color: "#800000", weight, opacity: 1, dashArray: "5,5" };
+          } else if (priorite === "Projet connu") {
+            return { color: "#808080", weight, opacity: 1, dashArray: "5,5" };
+          } else if (["2", "3", "4"].includes(priorite)) {
+            return { color: "#cc0000", weight, opacity: 1, dashArray: "5,5" };
+          } else {
+            return { color: "#999999", weight: 2, opacity: 0.5, dashArray: "5,5" };
+          }
+        }
+
+        function updateLineStyle() {
+          if (!planveloLayer) return;
+          planveloLayer.setStyle(getLineStyle);
+        }
+
+        // Initialisation
+        createPlanVeloLayer();
+        map.on("zoomend", updateLineStyle);
+        updateLineStyle();
+
+
+
+        function getPrioStyle(feature) {
+          const zoom = map.getZoom();
+          let weight = 4;
+          if (zoom < 13) weight = 2;
+          else if (zoom < 15) weight = 3;
+
+          return {
+            color: "#780002", // couleur Priorité 1
+            weight: weight,
+            opacity: 1,
           };
+        }
+
+        function getPrio2Style(feature) {
+          const zoom = map.getZoom();
+          let weight = 4;
+          if (zoom < 13) weight = 2;
+          else if (zoom < 15) weight = 3;
+
+          return {
+            color: "#db222a", // couleur Priorité 2
+            weight: weight,
+            opacity: 1,
+          };
+        }
+
+          function getnonprioStyle(feature) {
+          const zoom = map.getZoom();
+          let weight = 4;
+          if (zoom < 13) weight = 2;
+          else if (zoom < 15) weight = 3;
+
+          return {
+            color: "#f77f00", // couleur non prio
+            weight: weight,
+            opacity: 1,
+          };
+        }
+
+        // Priorités 1
+        const prioFiltrée = {
+          ...prioData,
+          features: prioData.features.filter((feature) => {
+            const valeur = feature.properties["prio1 élu"];
+            return valeur === "1" || valeur === "x";
+          }),
+        };
+
+        const prioLayer = L.geoJSON(prioFiltrée, {
+          style: getPrioStyle,
+          onEachFeature: (feature, layer) => {
+            const id1 = feature.properties["ID_2"] || "Non précisé";
+            layer.bindPopup(`
+              <strong>Priorités 1 ateliers</strong><br>
+              <b>Identifiant :</b> ${id1}<br>
+            `);
+          },
+        });
+
+        // Priorités 2
+        const prio2Layer = L.geoJSON(prio2Data, {
+          style: getPrio2Style,
+          onEachFeature: (feature, layer) => {
+            const id2 = feature.properties["ID_2"] || "Non précisé";
+            layer.bindPopup(`
+              <strong>Priorités 2 ateliers</strong><br>
+              <b>Identifiant :</b> ${id2}<br>
+            `);
+          },
+        });
+
+        // Non priorisé
+        const nonprioLayer = L.geoJSON(nonprioData, {
+          style: getnonprioStyle,
+          onEachFeature: (feature, layer) => {
+            const id3 = feature.properties["ID_2"] || "Non précisé";
+            layer.bindPopup(`
+              <strong>Non priorisés</strong><br>
+              <b>Identifiant :</b> ${id3}<br>
+            `);
+          },
+        });
+
+        const prioGroup = L.layerGroup([prioLayer, prio2Layer, nonprioLayer]);
+
+        function updatePrioStyles() {
+          if (prioLayer) prioLayer.setStyle(getPrioStyle);
+          if (prio2Layer) prio2Layer.setStyle(getPrio2Style);
+          if (nonprioLayer) nonprioLayer.setStyle(getnonprioStyle);
+        }
+
+        map.on("zoomend", updatePrioStyles);
+        updatePrioStyles(); // au chargement initial
+
+        // Ateliers associations
+        const ateliersFiltrée = {
+          ...ateliersData,
+          features: ateliersData.features.filter((feature) => {
+            const valeur = feature.properties["PRIORITE"];
+            return valeur === "Prio1"; 
+          }),
+        };
+
 
         const ateliersLayer = L.geoJSON(ateliersFiltrée, {
             style: () => ({
@@ -345,35 +522,63 @@
           }).addTo(map);
           
 
-        const zones30Layer = L.geoJSON(zones30Data, {
-          style: {
-            color: "#cc0000",
-            weight: 2,
-            fillColor: "#ff6666",
-            fillOpacity: 0.4,
-          },
-          onEachFeature: (feature, layer) => {
-            layer.bindPopup(`<strong>Zone 30</strong>`);
-          },
-        })
+          let zones30Layer; // Zones 30
+
+          function getZone30Style(feature) {
+            const zoom = map.getZoom();
+
+            // Poids variable selon le zoom
+            let weight = 3;
+            if (zoom < 13) weight = 1;
+            else if (zoom < 15) weight = 2;
+
+            return {
+              color: "#bbdefb",
+              weight: weight,
+              fillColor: "#bbdefb",
+              fillOpacity: 0.4,
+            };
+          }
+
+          function createZones30Layer() {
+            zones30Layer = L.geoJSON(zones30Data, {
+              style: getZone30Style,
+              onEachFeature: (feature, layer) => {
+                layer.bindPopup(`<strong>Zone 30</strong>`);
+              },
+            })
+          }
+
+          function updateZones30Style() {
+            if (!zones30Layer) return;
+            zones30Layer.setStyle(getZone30Style);
+          }
+
+          // Initialisation
+          createZones30Layer();
+          map.on("zoomend", updateZones30Style);
+          updateZones30Style();
+
 
         const baseMaps = {
           "OSM": osmWorld,
           "CartoDB Positron": positron,
           "Google Satellite": googleSat,
+          "ESRI Dark": ESRIDark,
         };
 
         const overlays = {
           "Écoles": ecolesLayer,
           "Gares": garesLayer,
-          "Points durs": pointsDursLayer,
-          "Liaisons SDIC": pistesLayer,
-          "Zones 30": zones30Layer, 
           "Accidents": accidentsLayer,
-          "Points durs FUB": fubLayer,
+          "Points durs (usagers)": fubLayer,
+          "Points durs (communes)": pointsDursLayer,
+          "Zones 30": zones30Layer, 
+          "Aménagements existants": existantLayer, 
+          "Liaisons SDIC": pistesLayer,
           "Plan vélo": planveloLayer,
-          "Priorités ateliers": prioLayer,
-          "Liaisons ateliers": ateliersLayer,
+          "Liaisons de principe - communes": prioGroup,
+          "Liaisons de principe - associations": ateliersLayer,
         };
 
         L.control.layers(baseMaps, overlays, {
@@ -383,47 +588,66 @@
       }
     );
 
-    const legend = L.control({ position: "bottomright" });
+  // Création de la légende
+  const legend = L.control({ position: "bottomright" });
 
-legend.onAdd = function (map) {
-  const div = L.DomUtil.create("div", "info legend");
-  div.innerHTML +=
-    "<img src='data/ecole.png' width='20' style='vertical-align:middle'> Écoles<br>";
-  div.innerHTML +=
-    "<img src='data/gare.png' width='20' style='vertical-align:middle'> Gares<br>";
-  div.innerHTML +=
-    "<i style='background:#4361ee; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs<br>";
-  div.innerHTML +=
-    "<i style='background:#7209b7; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs FUB<br>";
-  div.innerHTML +=
-    "<i style='background:#9d0208; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Accidents<br>";
-  div.innerHTML +=
-    "<i style='background:#ff6666; width: 20px; height: 10px; display:inline-block; margin-right:5px; opacity:0.6; border: 2px solid #cc0000;'></i> Zones 30<br>";
-  div.innerHTML +=
-    "<i style='background:#00b35a; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC<br>";
-  div.innerHTML +=
-    "<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorités ateliers<br><br>";
+  legend.onAdd = function (map) {
+    const div = L.DomUtil.create("div", "info legend");
+    div.id = "map-legend"; // Pour pouvoir la manipuler ensuite
 
-  div.innerHTML += "<strong>Plan Vélo 2021-2026</strong><br>";
-  div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px dashed #00733f; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1<br>";
-    div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px dashed #66cc99; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1 (Coup parti)<br>";
-  div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px dashed #cc0000; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 2, 3, 4<br>";
-  div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px dashed #800000; width: 25px; display:inline-block; margin-right:5px'></i> Post 2026<br>";
-  div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px dashed #808080; width: 25px; display:inline-block; margin-right:5px'></i> Inscrit dans un projet urbain<br>";
-  div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px solid #73b851; width: 25px; display:inline-block; margin-right:5px'></i> Existant<br>";
-  div.innerHTML +=
-    "&nbsp;&nbsp;&nbsp;<i style='border-top: 3px solid #5188ff; width: 25px; display:inline-block; margin-right:5px'></i> Existant<br>";
+    div.innerHTML += "<strong>Équipements</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/Ecole.svg' width='15' style='vertical-align:middle'> Écoles élémentaires<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/Lycee.svg' width='15' style='vertical-align:middle'> Collège & lycée<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/gare.png' width='20' style='vertical-align:middle'> Gares<br><br>";
 
-  return div;
-};
+    div.innerHTML += "<strong>Sécurité à vélo</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#4361ee; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs identifiés par les communes (2025)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#0496ff; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs déclarés par les usagers (FUBicy)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#9d0208; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Accidents mortels ou graves (ONISR ; 2013–2022)<br><br>";
 
-    legend.addTo(map);
+    div.innerHTML += "<i style='background:#bbdefb; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Zones 30<br>";
+    div.innerHTML += "<i style='background:#73b851; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Aménagement cyclable existant<br>";
+    div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br>";
+    div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br><br>";
+
+    div.innerHTML += "<strong>Liaisons de principes SDIC</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par communes - Priorité 1 (2025)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#db222a; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par communes - Priorité 2 (2025)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Non priorisées<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background: #5188ff; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par les associations (CADR67 - S.A.V ; 2025)<br><br>";
+
+    div.innerHTML += "<strong>Plan Vélo 2021–2026</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #00733f; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #66cc99; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1 (Coup parti)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #cc0000; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 2, 3, 4<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #800000; width: 25px; display:inline-block; margin-right:5px'></i> Post 2026<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #808080; width: 25px; display:inline-block; margin-right:5px'></i> Inscrit dans un projet urbain<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px solid #73b851; width: 25px; display:inline-block; margin-right:5px'></i> Existant<br>";
+
+    return div;
+  };
+
+  legend.addTo(map);
+
+  // Création du bouton pour afficher/masquer la légende
+  const legendToggle = L.control({ position: "topright" });
+
+  legendToggle.onAdd = function (map) {
+    const div = L.DomUtil.create("div", "legend-toggle-container");
+    const button = L.DomUtil.create("div", "leaflet-control legend-toggle", div);
+    button.innerHTML = "Afficher/Masquer la légende";
+
+    L.DomEvent.on(button, 'click', function (e) {
+      const legendEl = document.getElementById("map-legend");
+      if (legendEl) {
+        legendEl.classList.toggle("legend-hidden");
+      }
+    });
+
+    return div;
+  };
+
+  legendToggle.addTo(map);
   </script>
 </body>
 </html>
