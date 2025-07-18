@@ -595,34 +595,36 @@
     const div = L.DomUtil.create("div", "info legend");
     div.id = "map-legend"; // Pour pouvoir la manipuler ensuite
 
-    div.innerHTML += "<strong>Équipements</strong><br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/Ecole.svg' width='15' style='vertical-align:middle'> Écoles élémentaires<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/Lycee.svg' width='15' style='vertical-align:middle'> Collège & lycée<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/gare.png' width='20' style='vertical-align:middle'> Gares<br><br>";
-
-    div.innerHTML += "<strong>Sécurité à vélo</strong><br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#4361ee; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs identifiés par les communes (2025)<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#0496ff; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs déclarés par les usagers (FUBicy)<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#9d0208; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Accidents mortels ou graves (ONISR ; 2013–2022)<br><br>";
-
-    div.innerHTML += "<i style='background:#bbdefb; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Zones 30<br>";
-    div.innerHTML += "<i style='background:#73b851; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Aménagement cyclable existant<br>";
-    div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br>";
+    div.innerHTML += "<strong>Liaisons de principe proposées au SDIC (2025)</strong><br>";
     div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br><br>";
+    div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br>";
 
     div.innerHTML += "<strong>Liaisons de principes SDIC</strong><br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par communes - Priorité 1 (2025)<br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#db222a; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par communes - Priorité 2 (2025)<br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Non priorisées<br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background: #5188ff; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par les associations (CADR67 - S.A.V ; 2025)<br><br>";
-
+    
     div.innerHTML += "<strong>Plan Vélo 2021–2026</strong><br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #00733f; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1<br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #66cc99; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1 (Coup parti)<br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #cc0000; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 2, 3, 4<br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #800000; width: 25px; display:inline-block; margin-right:5px'></i> Post 2026<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #808080; width: 25px; display:inline-block; margin-right:5px'></i> Inscrit dans un projet urbain<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px solid #73b851; width: 25px; display:inline-block; margin-right:5px'></i> Existant<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #808080; width: 25px; display:inline-block; margin-right:5px'></i> Inscrit dans un projet urbain<br><br>";
+
+    div.innerHTML += "<strong>Sécurité à vélo</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#4361ee; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs identifiés par les communes (2025)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#0496ff; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Points durs déclarés par les usagers (FUBicy)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#9d0208; width: 12px; height: 12px; display:inline-block; border-radius:50%; margin-right:5px'></i> Accidents mortels ou graves (ONISR ; 2013–2022)<br><br>";
+
+    div.innerHTML += "<strong>Existant</strong><br>";
+    div.innerHTML += "<i style='background:#bbdefb; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Zones 30<br>";
+    div.innerHTML += "<i style='background:#73b851; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Aménagement cyclable existant<br><br>";
+    
+    div.innerHTML += "<strong>Équipements</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/Ecole.svg' width='15' style='vertical-align:middle'> Écoles élémentaires<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/Lycee.svg' width='15' style='vertical-align:middle'> Collège & lycée<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<img src='data/gare.png' width='20' style='vertical-align:middle'> Gares<br>";
 
     return div;
   };
