@@ -376,8 +376,6 @@
           // Même logique de style que ton code initial
           if (priorite === "1" || priorite === "1,à améliorer") {
             return { color: "#00733f", weight, opacity: 1, dashArray: "5,5" };
-          } else if (priorite === "amenagement realise") {
-            return { color: "#73b851", weight, opacity: 1 };
           } else if (priorite === "1 CP") {
             return { color: "#66cc99", weight, opacity: 1, dashArray: "5,5" };
           } else if (priorite === "Post 2026") {
@@ -596,7 +594,7 @@
     div.id = "map-legend"; // Pour pouvoir la manipuler ensuite
 
     div.innerHTML += "<strong>Liaisons de principe proposées au SDIC (2025)</strong><br>";
-    div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br><br>";
+    div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br>";
     div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br>";
 
     div.innerHTML += "<strong>Liaisons de principes SDIC</strong><br>";
