@@ -593,15 +593,17 @@
     const div = L.DomUtil.create("div", "info legend");
     div.id = "map-legend"; // Pour pouvoir la manipuler ensuite
 
-    div.innerHTML += "<strong>Liaisons de principe proposées au SDIC (2025)</strong><br>";
+    div.innerHTML += "<strong>Liaisons de principe SDIC priorisées" (2025)</strong><br>";
     div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br>";
     div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br><br>";
 
-    div.innerHTML += "<strong>Liaisons de principes SDIC</strong><br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par communes - Priorité 1 (2025)<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#db222a; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par communes - Priorité 2 (2025)<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Non priorisées<br>";
-    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background: #5188ff; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par les associations (CADR67 - S.A.V ; 2025)<br><br>";
+    div.innerHTML += "<strong>Liaisons de principe du SDIC priorisées par les communes (2025)</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par les communes - Priorité 1 (2025)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#db222a; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par les communes - Priorité 2 (2025)<br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Non priorisées<br><br>";
+    
+    div.innerHTML += "<strong>Liaisons de principe du SDIC priorisées par les associations (2025)</strong><br>";
+    div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background: #5188ff; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorisées par les associations (CADR67 - S.A.V ; 2024)<br><br>";
     
     div.innerHTML += "<strong>Plan Vélo 2021–2026</strong><br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='border-top: 1.5px dashed #00733f; width: 25px; display:inline-block; margin-right:5px'></i> Priorité 1<br>";
