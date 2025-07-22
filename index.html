@@ -347,6 +347,7 @@
             layer.bindPopup(`<strong>Existant</strong>`);
           }
         }).addTo(map);
+        existantLayer.addTo(map).bringToBack();
 
         // Adapter l'épaisseur au zoom
         map.on("zoomend", () => {
@@ -373,6 +374,7 @@
               layer.bindPopup(`<strong>${feature.properties.types || "Plan vélo 2021 2026"}</strong>`);
             },
           }).addTo(map);
+          planveloLayer.bringToBack();
         }
 
         function getLineStyle(feature) {
@@ -549,14 +551,15 @@
             };
           }
 
-          function createZones30Layer() {
-            zones30Layer = L.geoJSON(zones30Data, {
-              style: getZone30Style,
-              onEachFeature: (feature, layer) => {
-                layer.bindPopup(`<strong>Zone 30</strong>`);
-              },
-            })
-          }
+            function createZones30Layer() {
+              zones30Layer = L.geoJSON(zones30Data, {
+                style: getZone30Style,
+                onEachFeature: (feature, layer) => {
+                  layer.bindPopup(`<strong>Zone 30</strong>`);
+                },
+              }).addTo(map);
+              zones30Layer.bringToBack();
+            }
 
           function updateZones30Style() {
             if (!zones30Layer) return;
@@ -630,7 +633,7 @@
 
     div.innerHTML += "<strong>Existant</strong><br>";
     div.innerHTML += "<i style='background:#bbdefb; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Zones 30<br>";
-    div.innerHTML += "<i style='background:#73b851; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Aménagement cyclable existant (piste, bande cyclable,<br>
+    div.innerHTML += "<i style='background:#73b851; width: 20px; height: 1.5px; display:inline-block; margin-right:5px'></i> Aménagement cyclable existant (piste, bande cyclable,<br>;
     div.innerHTML += "&nbsp;&nbsp;&nbsp;voie partagée piétons-vélos, CVCB etc.)<br>";
 
     return div;
