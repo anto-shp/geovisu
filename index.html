@@ -573,7 +573,7 @@
           map.on("zoomend", updateZones30Style);
           updateZones30Style();
 
-                  // Fonction pour calculer l'angle (en degrés) entre le premier et dernier point de la ligne
+          // Fonction pour calculer l'angle (en degrés) entre le premier et dernier point de la ligne
           function getLineAngle(latlngs) {
             const p1 = latlngs[0];
             const p2 = latlngs[latlngs.length - 1];
@@ -592,23 +592,13 @@
             return latlngs.slice().reverse();
           }
 
-          const nouveausdicLayer = L.geoJSON(nouveausdicData, {
-            style: (feature) => {
-              const statut = feature.properties["ETAT"];
-              let color = "#00b35a";
-
-              if (statut === "NOUVELLE LIAISON") {
-                color = "#7209b7";
-              } else if (statut === "EXISTANT A AMELIORER") {
-                color = "#f77f00";
-              }
-
-              return {
-                color: color,
-                weight: 3,
-                opacity: 0.8,
-              };
-            },
+            const nouveausdicLayer = L.geoJSON(nouveausdicData, {
+              style: () => ({
+                color: "#6200b3",
+                weight: 8,
+                opacity: 0.5
+              })
+            });
 
             onEachFeature: (feature, layer) => {
               const id = feature.properties["id_3"] || " ";
@@ -721,14 +711,11 @@
   legend.onAdd = function (map) {
     const div = L.DomUtil.create("div", "info legend");
     div.id = "map-legend"; // Pour pouvoir la manipuler ensuite
-
-    div.innerHTML += "<strong>Liaisons de principe SDIC (2025)</strong><br>";
-    div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br>";
-    div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br><br>";
-
+    
     div.innerHTML += "<strong>Liaisons de principe SDIC ajoutées par les communes<br>ou l'EMS (2025)</strong><br>";
     div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br>";
-    div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br><br>";
+    div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br>";
+    div.innerHTML += "<i style='background:#6200b3; width: 20px; height: 3px; opacity:0.5; display:inline-block; margin-right:5px'></i>Liaisons de principe SDIC ajoutées par les communes<br>ou l'EMS (2025)<br><br>";
 
     div.innerHTML += "<strong>Liaisons de principe du SDIC priorisées par les communes (2025)</strong><br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorité 1<br>";
