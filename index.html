@@ -96,6 +96,7 @@
 
   <script src="js/leaflet.js"></script>
   <script src="js/Control.Geocoder.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-textpath@1.3.0/leaflet.textpath.min.js"></script>
   <script>
       // Le point en bas à gauche de la carte
     var sudOuest = L.latLng(48.40,7.40);
@@ -174,8 +175,9 @@
       fetch("data/non_priorise.geojson").then((res) => res.json()),
       fetch("data/liaisons_ateliers.geojson").then((res) => res.json()),
       fetch("data/existant.geojson").then((res) => res.json()),
+      fetch("data/liaisons_principe_sdic_com_ems.geojson").then((res) => res.json()),
     ]).then(
-      ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData, prio2Data, nonprioData, ateliersData, existantData]) => {
+      ([ecolesData, garesData, pointsDursData, pistesData, zones30Data, accidentsData, fubData, planveloData, prioData, prio2Data, nonprioData, ateliersData, existantData, nouveausdicData]) => {
         const ecoleIcon = L.icon({
           iconUrl: "data/Ecole.svg",
           iconSize: [22, 22],
@@ -571,6 +573,118 @@
           map.on("zoomend", updateZones30Style);
           updateZones30Style();
 
+                  // Fonction pour calculer l'angle (en degrés) entre le premier et dernier point de la ligne
+          function getLineAngle(latlngs) {
+            const p1 = latlngs[0];
+            const p2 = latlngs[latlngs.length - 1];
+
+            const dx = p2.lng - p1.lng;
+            const dy = p2.lat - p1.lat;
+            let angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+            if (angle < 0) angle += 360;
+
+            return angle;
+          }
+
+          // Fonction pour inverser les points d'une ligne (polyligne)
+          function reverseLatLngs(latlngs) {
+            return latlngs.slice().reverse();
+          }
+
+          const nouveausdicLayer = L.geoJSON(nouveausdicData, {
+            style: (feature) => {
+              const statut = feature.properties["ETAT"];
+              let color = "#00b35a";
+
+              if (statut === "NOUVELLE LIAISON") {
+                color = "#7209b7";
+              } else if (statut === "EXISTANT A AMELIORER") {
+                color = "#f77f00";
+              }
+
+              return {
+                color: color,
+                weight: 3,
+                opacity: 0.8,
+              };
+            },
+
+            onEachFeature: (feature, layer) => {
+              const id = feature.properties["id_3"] || " ";
+              const communes = feature.properties["Commune_liaison"] || "Non précisé";
+              const statut = feature.properties["ETAT"] || "Non précisé";
+
+              layer.bindPopup(`
+                <strong>Liaison SDIC</strong><br>
+                <b>Identifiant :</b> ${id}<br>
+                <b>Commune liaison :</b> ${communes}<br>
+                <b>Statut :</b> ${statut}<br>
+              `);
+
+              if (layer instanceof L.Polyline) {
+                const latlngs = layer.getLatLngs();
+                const angle = getLineAngle(latlngs);
+
+                let textToShow = String(id);
+
+                // Si l’angle est entre 90 et 270 degrés, on inverse le texte pour éviter qu’il soit à l’envers
+                if (angle > 90 && angle < 270) {
+                  textToShow = textToShow.split("").reverse().join("");
+                }
+
+                layer.setText(textToShow, {
+                  repeat: false,
+                  center: true,
+                  offset: 0,
+                  attributes: {
+                    stroke: "#ffffff",
+                    "stroke-width": 1.5,
+                    "stroke-opacity": 1,
+                    fill: "#000000",
+                    "font-size": "14px",
+                    "font-weight": "bold"
+                  }
+                });
+              }
+            }
+          })
+
+
+          // Ajuster la taille du texte au zoom et gérer l’orientation aussi
+          map.on("zoomend", () => {
+            const zoom = map.getZoom();
+            const fontSize = zoom >= 14 ? "14px" : zoom >= 12 ? "14px" : "12px";
+
+            nouveausdicLayer.eachLayer((layer) => {
+              if (layer instanceof L.Polyline) {
+                const latlngs = layer.getLatLngs();
+                const angle = getLineAngle(latlngs);
+
+                let textToShow = String(layer.feature?.properties?.id_3 || " ");
+
+                if (angle > 90 && angle < 270) {
+                  textToShow = textToShow.split("").reverse().join("");
+                }
+
+                layer.setText(null);  // Supprime le texte précédent
+                layer.setText(textToShow, {
+                  repeat: false,
+                  center: true,
+                  offset: 0,
+                  attributes: {
+                    stroke: "#ffffff",
+                    "stroke-width": 1,
+                    "stroke-opacity": 1,
+                    fill: "#000000",
+                    "font-size": fontSize,
+                    "font-weight": "bold"
+                  }
+                });
+              }
+            });
+          });
+
 
         const baseMaps = {
           "OSM": osmWorld,
@@ -588,6 +702,7 @@
           "Zones 30": zones30Layer, 
           "Aménagements existants": existantLayer, 
           "Liaisons SDIC": pistesLayer,
+          "Liaisons de principe SDIC ajoutées<br> &nbsp;&nbsp;&nbsp&nbsp;&nbsp par les communes ou l'EMS": nouveausdicLayer,
           "Plan vélo": planveloLayer,
           "Liaisons de principe - communes": prioGroup,
           "Liaisons de principe - associations": ateliersLayer,
