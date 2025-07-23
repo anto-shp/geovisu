@@ -597,48 +597,45 @@
                 color: "#6200b3",
                 weight: 8,
                 opacity: 0.5
-              }),
-            });
-
-            onEachFeature: (feature, layer) => {
-              const id = feature.properties["id_3"] || " ";
-              const communes = feature.properties["Commune_liaison"] || "Non précisé";
-              const statut = feature.properties["ETAT"] || "Non précisé";
-
-              layer.bindPopup(`
-                <strong>Liaison SDIC</strong><br>
-                <b>Identifiant :</b> ${id}<br>
-                <b>Commune liaison :</b> ${communes}<br>
-                <b>Statut :</b> ${statut}<br>
-              `);
-
-              if (layer instanceof L.Polyline) {
-                const latlngs = layer.getLatLngs();
-                const angle = getLineAngle(latlngs);
-
-                let textToShow = String(id);
-
-                // Si l’angle est entre 90 et 270 degrés, on inverse le texte pour éviter qu’il soit à l’envers
-                if (angle > 90 && angle < 270) {
-                  textToShow = textToShow.split("").reverse().join("");
-                }
-
-                layer.setText(textToShow, {
-                  repeat: false,
-                  center: true,
-                  offset: 0,
-                  attributes: {
-                    stroke: "#ffffff",
-                    "stroke-width": 0.6,
-                    "stroke-opacity": 1,
-                    fill: "#000000",
-                    "font-size": "20px",
-                    "font-weight": "bold"
+              }),   // <-- virgule ici obligatoire !
+              onEachFeature: (feature, layer) => {
+                const id = feature.properties["id_3"] || " ";
+                const communes = feature.properties["Commune_liaison"] || "Non précisé";
+                const statut = feature.properties["ETAT"] || "Non précisé";
+            
+                layer.bindPopup(`
+                  <strong>Liaison SDIC</strong><br>
+                  <b>Identifiant :</b> ${id}<br>
+                  <b>Commune liaison :</b> ${communes}<br>
+                  <b>Statut :</b> ${statut}<br>
+                `);
+            
+                if (layer instanceof L.Polyline) {
+                  const latlngs = layer.getLatLngs();
+                  const angle = getLineAngle(latlngs);
+            
+                  let textToShow = String(id);
+            
+                  if (angle > 90 && angle < 270) {
+                    textToShow = textToShow.split("").reverse().join("");
                   }
-                });
+            
+                  layer.setText(textToShow, {
+                    repeat: false,
+                    center: true,
+                    offset: 0,
+                    attributes: {
+                      stroke: "#ffffff",
+                      "stroke-width": 0.6,
+                      "stroke-opacity": 1,
+                      fill: "#000000",
+                      "font-size": "20px",
+                      "font-weight": "bold"
+                    }
+                  });
+                }
               }
-            }
-          })
+            });
 
 
           // Ajuster la taille du texte au zoom et gérer l’orientation aussi
