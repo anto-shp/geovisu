@@ -592,17 +592,20 @@
             return latlngs.slice().reverse();
           }
 
+            // Création de la couche GeoJSON avec style unique et popups
             const nouveausdicLayer = L.geoJSON(nouveausdicData, {
               style: () => ({
                 color: "#ff499e",
                 weight: 8,
                 opacity: 0.5
-              }),  
+              }),
+              
               onEachFeature: (feature, layer) => {
                 const id = feature.properties["id_3"] || " ";
                 const communes = feature.properties["Commune_liaison"] || "Non précisé";
                 const statut = feature.properties["ETAT"] || "Non précisé";
             
+                // Bind popup pour chaque entité
                 layer.bindPopup(`
                   <strong>Liaison SDIC</strong><br>
                   <b>Identifiant :</b> ${id}<br>
@@ -610,12 +613,14 @@
                   <b>Statut :</b> ${statut}<br>
                 `);
             
+                // Si la géométrie est une ligne, ajouter un texte orienté
                 if (layer instanceof L.Polyline) {
                   const latlngs = layer.getLatLngs();
-                  const angle = getLineAngle(latlngs);
+                  const angle = getLineAngle(latlngs);  // Fonction externe à définir
             
                   let textToShow = String(id);
             
+                  // Inverser le texte si l'angle est entre 90 et 270 degrés pour une meilleure lisibilité
                   if (angle > 90 && angle < 270) {
                     textToShow = textToShow.split("").reverse().join("");
                   }
@@ -635,8 +640,10 @@
                   });
                 }
               }
-            });planveloLayer.bringToBack();
-
+            });
+            
+            // Mettre la couche en arrière-plan (derrière les autres couches)
+            nouveausdicLayer.bringToBack();
 
           // Ajuster la taille du texte au zoom et gérer l’orientation aussi
           map.on("zoomend", () => {
