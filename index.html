@@ -594,10 +594,10 @@
 
             const nouveausdicLayer = L.geoJSON(nouveausdicData, {
               style: () => ({
-                color: "#6200b3",
+                color: "#ff499e",
                 weight: 8,
                 opacity: 0.5
-              }),   // <-- virgule ici obligatoire !
+              }),  
               onEachFeature: (feature, layer) => {
                 const id = feature.properties["id_3"] || " ";
                 const communes = feature.properties["Commune_liaison"] || "Non précisé";
@@ -712,7 +712,7 @@
     div.innerHTML += "<strong>Liaisons de principe SDIC ajoutées par les communes<br>ou l'EMS (2025)</strong><br>";
     div.innerHTML += "<i style='background:#7209b7; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à créer<br>";
     div.innerHTML += "<i style='background:#f77f00; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Liaisons SDIC à améliorer<br>";
-    div.innerHTML += "<i style='background:#6200b3; width: 20px; height: 3px; opacity:0.5; display:inline-block; margin-right:5px'></i>Liaisons de principe SDIC ajoutées par les communes<br>ou l'EMS (2025)<br><br>";
+    div.innerHTML += "<i style='background:#ff499e; width: 20px; height: 3px; opacity:0.5; display:inline-block; margin-right:5px'></i>Liaisons de principe SDIC ajoutées par les communes<br>ou l'EMS (2025)<br><br>";
 
     div.innerHTML += "<strong>Liaisons de principe du SDIC priorisées par les communes (2025)</strong><br>";
     div.innerHTML += "&nbsp;&nbsp;&nbsp;<i style='background:#780002; width: 20px; height: 3px; display:inline-block; margin-right:5px'></i> Priorité 1<br>";
