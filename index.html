@@ -639,10 +639,10 @@
                   offset: 0,
                   attributes: {
                     stroke: "#ffffff",
-                    "stroke-width": 1.5,
+                    "stroke-width": 1.3,
                     "stroke-opacity": 1,
                     fill: "#000000",
-                    "font-size": "14px",
+                    "font-size": "16px",
                     "font-weight": "bold"
                   }
                 });
@@ -654,7 +654,7 @@
           // Ajuster la taille du texte au zoom et gérer l’orientation aussi
           map.on("zoomend", () => {
             const zoom = map.getZoom();
-            const fontSize = zoom >= 14 ? "14px" : zoom >= 12 ? "14px" : "12px";
+            const fontSize = zoom >= 14 ? "0px" : zoom >= 12 ? "14px" : "12px";
 
             nouveausdicLayer.eachLayer((layer) => {
               if (layer instanceof L.Polyline) {
