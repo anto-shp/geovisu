@@ -641,11 +641,10 @@
                 }
               }
             });
-            
-            // Mettre la couche en arrière-plan (derrière les autres couches)
+
+            nouveausdicLayer.addTo(map);
             nouveausdicLayer.bringToBack();
 
-          // Ajuster la taille du texte au zoom et gérer l’orientation aussi
           map.on("zoomend", () => {
             const zoom = map.getZoom();
             const fontSize = zoom >= 14 ? "20px" : zoom >= 12 ? "0px" : "0px";
